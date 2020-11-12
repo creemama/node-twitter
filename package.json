@@ -28,5 +28,8 @@
     "type": "git",
     "url": "https://github.com/creemama/node-twitter"
   },
+  "scripts": {
+    "prettier": "prettier --write ."
+  },
   "version": "0.0.0"
 }
