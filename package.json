@@ -4,10 +4,13 @@
     "node-twitter": "./cli.js"
   },
   "dependencies": {
-    "@util.js/files": "0.39.2",
-    "@util.js/numbers": "0.39.2",
-    "@util.js/promises": "0.39.2",
-    "@util.js/timers": "0.39.2",
+    "@util.js/errors": "0.40.1",
+    "@util.js/node-files": "0.40.1",
+    "@util.js/node-timers": "0.40.1",
+    "@util.js/numbers": "0.40.1",
+    "@util.js/objects": "0.40.1",
+    "@util.js/privates": "0.40.1",
+    "@util.js/promises": "0.40.1",
     "chalk": "4.1.0",
     "oauth": "0.9.15",
     "twitter": "1.7.1"
