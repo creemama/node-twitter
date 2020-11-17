@@ -17,6 +17,7 @@
   },
   "description": "A Twitter command-line-interface (CLI)",
   "devDependencies": {
+    "npm-check-updates": "10.2.1",
     "pkg": "4.4.9",
     "prettier": "2.1.2"
   },
@@ -30,10 +31,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/creemama/node-twitter"
-  },
-  "scripts": {
-    "pkg": "pkg --out-path target --targets node14-alpine-x64,node14-linux-x64,node14-macos-x64,node14-win-x64 .",
-    "prettier": "prettier --write ."
   },
   "version": "0.1.1"
 }

@@ -27,3 +27,12 @@ node-twitter screen-name unfollow
 
 [comment]: # "Update outputHelp in NodeTwitterMain if you update "
 [comment]: # "node-twitter's usage here."
+
+## Repository Maintenance Commands
+
+- Work within a Docker container: `./dev.sh docker`
+- Run from a Docker container: `./dev.sh docker -c "npm link && node-twitter"`
+- Create standalone binaries: `./dev.sh docker-pkg`
+- Format the project: `./dev.sh docker-format`
+- Update dependencies: `./dev.sh docker-update-deps`
+- Deploy: `./dev.sh deploy`
