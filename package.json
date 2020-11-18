@@ -32,7 +32,7 @@
     "url": "https://github.com/creemama/node-twitter"
   },
   "scripts": {
-    "pkg": "pkg --out-path target --targets node10-alpine-x64,node10-linux-x64,node14-macos-x64,node10-win-x64 .",
+    "pkg": "pkg --out-path target --targets node14-alpine-x64,node14-linux-x64,node14-macos-x64,node14-win-x64 .",
     "prettier": "prettier --write ."
   },
   "version": "0.1.1"
