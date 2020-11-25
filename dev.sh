@@ -8,15 +8,14 @@ cd "$script_dir"
 if [ ! -f shellutil/shellutil.sh ]; then
 	git submodule update --init
 fi
+# shellcheck source=shellutil/mainutil.sh
+. shellutil/mainutil.sh
 # shellcheck source=shellutil/shellutil.sh
 . shellutil/shellutil.sh
 # shellcheck source=shellutil/updateutil.sh
 . shellutil/updateutil.sh
 # set -o xtrace
 
-apk_git=git~=2.24
-apk_gnupg=gnupg~=2.2
-apk_openssh=openssh~=8.1
 node_image=creemama/node-no-yarn:14.15.1-alpine3.11
 
 deploy() {
@@ -69,42 +68,63 @@ deploy() {
 
 	export GPG_TTY
 	GPG_TTY=/dev/console
-	run_git commit -am "$commit_type: bump node-twitter to v$new_version"
+	./shellutil/git.sh git commit -am "$commit_type: bump node-twitter to v$new_version"
 	npm adduser
 	npm publish --access public
-	run_git push origin master
+	./shellutil/git.sh git push origin master
 }
 
 main() {
 	# shellcheck disable=SC2039
+	local command_help
+	command_help='deploy - Bump the version number and deploy to npm.
+docker - Develop inside a Docker container.
+docker-deploy - Run deploy using a Docker container.
+docker-format - Run format using a Docker container.
+docker-git - Run git using a Docker container.
+docker-gitk - Run gitk using a Docker container.
+docker-pkg - Run pkg using a Docker container.
+docker-update - Run update using a Docker container.
+format - Run prettier, shfmt, and shellcheck on this project.
+git - Run git.
+pkg - Create a standalone binary of this project.
+update - Check and bump the version number of project dependencies.'
+	# shellcheck disable=SC2039
+	local commands
+	commands="$(main_extract_commands "$command_help")"
+	# shellcheck disable=SC2086
 	if [ -z "${1:-}" ]; then
-		printf '%sEnter a command.\n%s' "$(tred)" "$(treset)"
-		exit 1
-	elif [ "$1" = deploy ]; then
+		main_exit_with_no_command_error "$command_help"
+	elif [ "$1" = "$(arg 0 $commands)" ]; then
 		deploy "$script_dir"
-	elif [ "$1" = docker ]; then
+	elif [ "$1" = "$(arg 1 $commands)" ]; then
 		shift
 		run_docker "$@"
-	elif [ "$1" = docker-deploy ]; then
+	elif [ "$1" = "$(arg 2 $commands)" ]; then
 		run_docker_deploy
-	elif [ "$1" = docker-format ]; then
+	elif [ "$1" = "$(arg 3 $commands)" ]; then
 		./shellutil/format.sh docker-format
-	elif [ "$1" = docker-pkg ]; then
-		run_docker -c "./dev.sh pkg"
-	elif [ "$1" = docker-update ]; then
-		run_docker_update
-	elif [ "$1" = format ]; then
-		./shellutil/format.sh format
-	elif [ "$1" = git ]; then
+	elif [ "$1" = "$(arg 4 $commands)" ]; then
 		shift
-		run_git "$@"
-	elif [ "$1" = pkg ]; then
+		./shellutil/git.sh docker-git "$@"
+	elif [ "$1" = "$(arg 5 $commands)" ]; then
+		shift
+		./shellutil/git.sh docker-gitk "$@"
+	elif [ "$1" = "$(arg 6 $commands)" ]; then
+		run_docker -c "./dev.sh pkg"
+	elif [ "$1" = "$(arg 7 $commands)" ]; then
+		run_docker_update
+	elif [ "$1" = "$(arg 8 $commands)" ]; then
+		./shellutil/format.sh format
+	elif [ "$1" = "$(arg 9 $commands)" ]; then
+		shift
+		./shellutil/git.sh git "$@"
+	elif [ "$1" = "$(arg 10 $commands)" ]; then
 		run_pkg
-	elif [ "$1" = update ]; then
+	elif [ "$1" = "$(arg 11 $commands)" ]; then
 		update
 	else
-		printf '%s%s is not a recognized command.\n%s' "$(tred)" "$1" "$(treset)"
-		exit 1
+		main_exit_with_invalid_command_error "$1" "$command_help"
 	fi
 }
 
@@ -135,13 +155,6 @@ run_docker_update() {
 		sh -c './dev.sh update'
 }
 
-run_git() {
-	if ! test_command_exists git; then
-		apk add "$apk_git" "$apk_gnupg" "$apk_openssh"
-	fi
-	git "$@"
-}
-
 run_pkg() {
 	npx pkg --out-path target --targets node14-alpine-x64,node14-linux-x64,node14-macos-x64,node14-win-x64 .
 }
@@ -153,7 +166,7 @@ update() {
 	apk_update_package_version gnupg
 	apk_update_package_version openssh
 	npx ncu -u
-	run_git status
+	./shellutil/git.sh git status
 }
 
 main "$@"
