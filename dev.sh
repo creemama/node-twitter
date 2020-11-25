@@ -1,10 +1,10 @@
 #!/bin/sh
 
 script_dir="$(
-	cd "$(dirname "${0}")"
+	cd "$(dirname "$0")"
 	pwd -P
 )"
-cd "${script_dir}"
+cd "$script_dir"
 if [ ! -f shellutil/shellutil.sh ]; then
 	git submodule update --init
 fi
@@ -25,13 +25,13 @@ deploy() {
 	current_version="$(./cli.js --version)"
 	# shellcheck disable=SC2039
 	local major_version
-	major_version="$(printf %s "${current_version}" | sed -E 's/([0-9]+)\.[0-9]+\.[0-9]+/\1/')"
+	major_version="$(printf %s "$current_version" | sed -E 's/([0-9]+)\.[0-9]+\.[0-9]+/\1/')"
 	# shellcheck disable=SC2039
 	local minor_version
-	minor_version="$(printf %s "${current_version}" | sed -E 's/[0-9]+\.([0-9]+)\.[0-9]+/\1/')"
+	minor_version="$(printf %s "$current_version" | sed -E 's/[0-9]+\.([0-9]+)\.[0-9]+/\1/')"
 	# shellcheck disable=SC2039
 	local patch_version
-	patch_version="$(printf %s "${current_version}" | sed -E 's/[0-9]+\.[0-9]+\.([0-9]+)/\1/')"
+	patch_version="$(printf %s "$current_version" | sed -E 's/[0-9]+\.[0-9]+\.([0-9]+)/\1/')"
 
 	# shellcheck disable=SC2039
 	local new_version
@@ -40,19 +40,19 @@ deploy() {
 	while true; do
 		printf %s 'Is this a [m]ajor, m[i]nor, or [p]atch fix? '
 		read -r aip
-		case "${aip}" in
+		case "$aip" in
 		[Mm]*)
 			new_version="$((major_version + 1)).0.0"
 			commit_type=feat!
 			break
 			;;
 		[Ii]*)
-			new_version="${major_version}.$((minor_version + 1)).0"
+			new_version="$major_version.$((minor_version + 1)).0"
 			commit_type=feat
 			break
 			;;
 		[Pp]*)
-			new_version="${major_version}.${minor_version}.$((patch_version + 1))"
+			new_version="$major_version.$minor_version.$((patch_version + 1))"
 			commit_type=fix
 			break
 			;;
@@ -61,15 +61,15 @@ deploy() {
 	done
 
 	sed -E -i'' \
-		"s/^  \"version\": \".*(\"[,]?)/  \"version\": \"${new_version}\\1/" \
+		's/^  "version": ".*("[,]?)/  "version": "'"$new_version"'\1/' \
 		package.json
 	sed -E -i'' \
-		"s/^  \"version\": \".*(\"[,]?)/  \"version\": \"${new_version}\\1/" \
+		's/^  "version": ".*("[,]?)/  "version": "'"$new_version"'\1/' \
 		package-lock.json
 
 	export GPG_TTY
 	GPG_TTY=/dev/console
-	run_git commit -am "${commit_type}: bump node-twitter to v${new_version}"
+	run_git commit -am "$commit_type: bump node-twitter to v$new_version"
 	npm adduser
 	npm publish --access public
 	run_git push origin master
@@ -80,44 +80,43 @@ main() {
 	if [ -z "${1:-}" ]; then
 		printf '%sEnter a command.\n%s' "$(tred)" "$(treset)"
 		exit 1
-	elif [ "${1}" = deploy ]; then
-		deploy "${script_dir}"
-	elif [ "${1}" = docker ]; then
+	elif [ "$1" = deploy ]; then
+		deploy "$script_dir"
+	elif [ "$1" = docker ]; then
 		shift
-		run_docker "${@:-}"
-	elif [ "${1}" = docker-deploy ]; then
+		run_docker "$@"
+	elif [ "$1" = docker-deploy ]; then
 		run_docker_deploy
-	elif [ "${1}" = docker-format ]; then
+	elif [ "$1" = docker-format ]; then
 		./shellutil/format.sh docker-format
-	elif [ "${1}" = docker-pkg ]; then
+	elif [ "$1" = docker-pkg ]; then
 		run_docker -c "./dev.sh pkg"
-	elif [ "${1}" = docker-update ]; then
+	elif [ "$1" = docker-update ]; then
 		run_docker_update
-	elif [ "${1}" = format ]; then
+	elif [ "$1" = format ]; then
 		./shellutil/format.sh format
-	elif [ "${1}" = git ]; then
+	elif [ "$1" = git ]; then
 		shift
-		run_git "${@:-}"
-	elif [ "${1}" = pkg ]; then
+		run_git "$@"
+	elif [ "$1" = pkg ]; then
 		run_pkg
-	elif [ "${1}" = update ]; then
+	elif [ "$1" = update ]; then
 		update
 	else
-		printf '%s%s is not a recognized command.\n%s' "$(tred)" "${1}" "$(treset)"
+		printf '%s%s is not a recognized command.\n%s' "$(tred)" "$1" "$(treset)"
 		exit 1
 	fi
 }
 
 run_docker() {
-	# shellcheck disable=SC2068
 	docker run -it --rm \
-		--volume "${script_dir}:/tmp" \
+		--volume "$script_dir":/tmp \
 		--volume ~/.gnupg:/root/.gnupg \
 		--volume ~/.node-twitter:/root/.node-twitter \
 		--volume ~/.ssh:/root/.ssh \
 		--workdir /tmp \
-		"${node_image}" \
-		sh ${@:-}
+		"$node_image" \
+		sh "$@"
 }
 
 run_docker_deploy() {
@@ -136,12 +135,11 @@ run_docker_update() {
 		sh -c './dev.sh update'
 }
 
-# shellcheck disable=SC2068
 run_git() {
 	if ! test_command_exists git; then
-		apk add "${apk_git}" "${apk_gnupg}" "${apk_openssh}"
+		apk add "$apk_git" "$apk_gnupg" "$apk_openssh"
 	fi
-	git ${@}
+	git "$@"
 }
 
 run_pkg() {
@@ -158,4 +156,4 @@ update() {
 	run_git status
 }
 
-main "${@:-}"
+main "$@"
