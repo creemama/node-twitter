@@ -77,33 +77,33 @@ deploy() {
 
 main() {
 	# shellcheck disable=SC2039
-	if [ "${1:-}" = deploy ]; then
+	if [ -z "${1:-}" ]; then
+		printf '%sEnter a command.\n%s' "$(tred)" "$(treset)"
+		exit 1
+	elif [ "${1}" = deploy ]; then
 		deploy "${script_dir}"
-	elif [ "${1:-}" = docker ]; then
+	elif [ "${1}" = docker ]; then
 		shift
 		run_docker "${@:-}"
-	elif [ "${1:-}" = docker-deploy ]; then
+	elif [ "${1}" = docker-deploy ]; then
 		run_docker_deploy
-	elif [ "${1:-}" = docker-format ]; then
+	elif [ "${1}" = docker-format ]; then
 		./shellutil/format.sh docker-format
-	elif [ "${1:-}" = docker-pkg ]; then
+	elif [ "${1}" = docker-pkg ]; then
 		run_docker -c "./dev.sh pkg"
-	elif [ "${1:-}" = docker-update ]; then
+	elif [ "${1}" = docker-update ]; then
 		run_docker_update
-	elif [ "${1:-}" = format ]; then
+	elif [ "${1}" = format ]; then
 		./shellutil/format.sh format
-	elif [ "${1:-}" = git ]; then
+	elif [ "${1}" = git ]; then
 		shift
 		run_git "${@:-}"
-	elif [ "${1:-}" = pkg ]; then
+	elif [ "${1}" = pkg ]; then
 		run_pkg
-	elif [ "${1:-}" = update ]; then
+	elif [ "${1}" = update ]; then
 		update
-	elif [ -n "${1:-}" ]; then
-		printf '%s%s is not a recognized command.\n%s' "$(tred)" "${1}" "$(treset)"
-		exit 1
 	else
-		printf '%sEnter a command.\n%s' "$(tred)" "$(treset)"
+		printf '%s%s is not a recognized command.\n%s' "$(tred)" "${1}" "$(treset)"
 		exit 1
 	fi
 }
