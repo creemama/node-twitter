@@ -156,6 +156,7 @@ run_docker_update() {
 }
 
 run_pkg() {
+	rm -rf target
 	npx pkg --out-path target --targets node14-alpine-x64,node14-linux-x64,node14-macos-x64,node14-win-x64 .
 }
 
