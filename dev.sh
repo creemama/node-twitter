@@ -72,6 +72,8 @@ deploy() {
 	npm adduser
 	npm publish --access public
 	./shellutil/git.sh git push origin master
+	./shellutil/git.sh git tag v"$new_version"
+	./shellutil/git.sh git push origin v"$new_version"
 }
 
 main() {
