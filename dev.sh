@@ -68,7 +68,7 @@ deploy() {
 
 	export GPG_TTY
 	GPG_TTY=/dev/console
-	./shellutil/git.sh git commit -am "$commit_type: bump node-twitter to v$new_version"
+	./shellutil/git.sh git commit -am "$commit_type: bump node-twitter to v$new_version" -S
 	npm adduser
 	npm publish --access public
 	./shellutil/git.sh git push origin master
